@@ -22,7 +22,7 @@ EconAgents UI is a web-based configuration tool designed to simplify the setup o
 1.  **Clone the repository (if you haven't already):**
 
     ```bash
-    git clone https://github.com/your-username/econagents-ui.git
+    git clone https://github.com/IBEX-TUDelft/econagents-ui.git
     cd econagents-ui
     ```
 
