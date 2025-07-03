@@ -1,5 +1,6 @@
 const nextConfig = {
   output: "export",
+  basePath: "/econagents-ui",
   eslint: {
     ignoreDuringBuilds: true,
   },
