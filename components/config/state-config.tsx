@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCustomStateTypes } from "@/hooks/use-custom-state-types";
 import {
   PlusIcon,
   Trash2Icon,
@@ -39,6 +40,49 @@ interface StateConfigProps {
   state: State;
   onChange: (state: State) => void;
 }
+
+const AddTypeDialog = ({
+  open,
+  onOpenChange,
+  onSave,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (newType: string) => void;
+}) => {
+  const [newType, setNewType] = useState("");
+
+  const handleSave = () => {
+    if (newType) {
+      onSave(newType);
+      setNewType("");
+      onOpenChange(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add Custom Type</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <Input
+            value={newType}
+            onChange={(e) => setNewType(e.target.value)}
+            placeholder="Enter new type name"
+          />
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave}>Save</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 export const defaultMetaFields: StateField[] = [
   {
@@ -129,6 +173,8 @@ export function StateConfig({ state, onChange }: StateConfigProps) {
   const [activeTab, setActiveTab] = useState("meta");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [isAddTypeDialogOpen, setIsAddTypeDialogOpen] = useState(false);
+  const { customTypes, addCustomType } = useCustomStateTypes();
   const [currentField, setCurrentField] = useState<StateField>({
     name: "",
     type: "str",
@@ -139,6 +185,17 @@ export function StateConfig({ state, onChange }: StateConfigProps) {
   const [defaultValidationError, setDefaultValidationError] = useState<
     string | null
   >(null);
+
+  const defaultTypes = [
+    "str",
+    "int",
+    "float",
+    "bool",
+    "list",
+    "dict",
+    "MarketState",
+  ];
+  const allTypes = [...defaultTypes, ...customTypes];
 
   const handleAddField = () => {
     setCurrentField({
@@ -619,6 +676,12 @@ export function StateConfig({ state, onChange }: StateConfigProps) {
         </TabsContent>
       </Tabs>
 
+      <AddTypeDialog
+        open={isAddTypeDialogOpen}
+        onOpenChange={setIsAddTypeDialogOpen}
+        onSave={addCustomType}
+      />
+
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -662,7 +725,7 @@ export function StateConfig({ state, onChange }: StateConfigProps) {
                       )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-[1fr_auto] items-end gap-2">
                     <div className="grid gap-2">
                       <Label htmlFor="field-type">Type</Label>
                       <Select
@@ -673,25 +736,28 @@ export function StateConfig({ state, onChange }: StateConfigProps) {
                             type: value as StateFieldType,
                           })
                         }
-                        // Disable if editing a default field
                         disabled={isEditingDefault}
                       >
                         <SelectTrigger id="field-type">
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="str">String</SelectItem>
-                          <SelectItem value="int">Integer</SelectItem>
-                          <SelectItem value="float">Float</SelectItem>
-                          <SelectItem value="bool">Boolean</SelectItem>
-                          <SelectItem value="list">List</SelectItem>
-                          <SelectItem value="dict">Dictionary</SelectItem>
-                          <SelectItem value="MarketState">
-                            MarketState
-                          </SelectItem>
+                          {allTypes.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsAddTypeDialogOpen(true)}
+                      disabled={isEditingDefault}
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
 
                     <div className="grid gap-2">
                       <Label htmlFor="field-default">Default Value</Label>
@@ -769,7 +835,6 @@ export function StateConfig({ state, onChange }: StateConfigProps) {
                           </p>
                         )}
                     </div>
-                  </div>
 
                   <>
                     <div className="grid grid-cols-2 gap-4">
