@@ -169,6 +169,16 @@ const validateDefaultValue = (type: string, value: string): string | null => {
   return null; // Valid or not a list/dict type requiring JSON validation
 };
 
+const defaultTypes = [
+  "str",
+  "int",
+  "float",
+  "bool",
+  "list",
+  "dict",
+  "MarketState",
+];
+
 export function StateConfig({ state, onChange }: StateConfigProps) {
   const [activeTab, setActiveTab] = useState("meta");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -186,15 +196,6 @@ export function StateConfig({ state, onChange }: StateConfigProps) {
     string | null
   >(null);
 
-  const defaultTypes = [
-    "str",
-    "int",
-    "float",
-    "bool",
-    "list",
-    "dict",
-    "MarketState",
-  ];
   const allTypes = [...defaultTypes, ...customTypes];
 
   const handleAddField = () => {
@@ -759,82 +760,82 @@ export function StateConfig({ state, onChange }: StateConfigProps) {
                     </Button>
                   </div>
 
-                    <div className="grid gap-2">
-                      <Label htmlFor="field-default">Default Value</Label>
-                      {currentField.type === "bool" ? (
-                        <Select
-                          value={
-                            currentField.default === true
-                              ? "true"
-                              : currentField.default === false
-                                ? "false"
-                                : "" // Represent null/undefined as empty string for the Select placeholder
-                          }
-                          onValueChange={(value) => {
-                            setCurrentField({
-                              ...currentField,
-                              default:
-                                value === "true"
-                                  ? true
-                                  : value === "false"
-                                    ? false
-                                    : null, // Store actual boolean or null
-                            });
-                            // Boolean select doesn't need text validation
-                            setDefaultValidationError(null);
-                          }}
-                        >
-                          <SelectTrigger id="field-default">
-                            <SelectValue placeholder="True/False" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="true">True</SelectItem>
-                            <SelectItem value="false">False</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : // Hide default input for MarketState
-                      currentField.type === "MarketState" ? (
-                        <Input
-                          id="field-default"
-                          value="Not Applicable"
-                          disabled
-                          className="text-muted-foreground italic"
-                        />
-                      ) : (
-                        // Existing Input for other types
-                        <Input
-                          id="field-default"
-                          value={currentField.default?.toString() || ""}
-                          onChange={(e) => {
-                            const newValue = e.target.value;
-                            // Validate immediately on change for non-boolean types
-                            const validationError = validateDefaultValue(
-                              currentField.type,
-                              newValue
-                            );
-                            setDefaultValidationError(validationError);
-                            // Update the field state
-                            setCurrentField({
-                              ...currentField,
-                              default: newValue,
-                            });
-                          }}
-                          placeholder={
-                            currentField.type === "list" ||
-                            currentField.type === "dict"
-                              ? `e.g., ${currentField.type === "list" ? "[1, 2, 3]" : "{'key': 'value'}"}`
-                              : "e.g., 0"
-                          }
-                        />
+                  <div className="grid gap-2">
+                    <Label htmlFor="field-default">Default Value</Label>
+                    {currentField.type === "bool" ? (
+                      <Select
+                        value={
+                          currentField.default === true
+                            ? "true"
+                            : currentField.default === false
+                              ? "false"
+                              : "" // Represent null/undefined as empty string for the Select placeholder
+                        }
+                        onValueChange={(value) => {
+                          setCurrentField({
+                            ...currentField,
+                            default:
+                              value === "true"
+                                ? true
+                                : value === "false"
+                                  ? false
+                                  : null, // Store actual boolean or null
+                          });
+                          // Boolean select doesn't need text validation
+                          setDefaultValidationError(null);
+                        }}
+                      >
+                        <SelectTrigger id="field-default">
+                          <SelectValue placeholder="True/False" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">True</SelectItem>
+                          <SelectItem value="false">False</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : // Hide default input for MarketState
+                    currentField.type === "MarketState" ? (
+                      <Input
+                        id="field-default"
+                        value="Not Applicable"
+                        disabled
+                        className="text-muted-foreground italic"
+                      />
+                    ) : (
+                      // Existing Input for other types
+                      <Input
+                        id="field-default"
+                        value={currentField.default?.toString() || ""}
+                        onChange={(e) => {
+                          const newValue = e.target.value;
+                          // Validate immediately on change for non-boolean types
+                          const validationError = validateDefaultValue(
+                            currentField.type,
+                            newValue
+                          );
+                          setDefaultValidationError(validationError);
+                          // Update the field state
+                          setCurrentField({
+                            ...currentField,
+                            default: newValue,
+                          });
+                        }}
+                        placeholder={
+                          currentField.type === "list" ||
+                          currentField.type === "dict"
+                            ? `e.g., ${currentField.type === "list" ? "[1, 2, 3]" : "{'key': 'value'}"}`
+                            : "e.g., 0"
+                        }
+                      />
+                    )}
+                    {/* Display validation error */}
+                    {defaultValidationError &&
+                      currentField.type !== "MarketState" && (
+                        <p className="text-xs text-destructive mt-1">
+                          {defaultValidationError}
+                        </p>
                       )}
-                      {/* Display validation error */}
-                      {defaultValidationError &&
-                        currentField.type !== "MarketState" && (
-                          <p className="text-xs text-destructive mt-1">
-                            {defaultValidationError}
-                          </p>
-                        )}
-                    </div>
+                  </div>
 
                   <>
                     <div className="grid grid-cols-2 gap-4">
