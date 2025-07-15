@@ -100,6 +100,32 @@ export function PromptPartialsConfig({
     setInserterVisibility((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const handleInsertText = (
+    partialId: string,
+    textToInsert: string,
+    currentValue: string
+  ) => {
+    const textarea = contentRefs.current[partialId]?.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const newValue =
+      currentValue.substring(0, start) +
+      textToInsert +
+      currentValue.substring(end);
+
+    handleUpdatePartial(partialId, "content", newValue);
+
+    setTimeout(() => {
+      if (textarea) {
+        textarea.focus();
+        textarea.selectionStart = textarea.selectionEnd =
+          start + textToInsert.length;
+      }
+    }, 0);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -215,11 +241,11 @@ export function PromptPartialsConfig({
                               <StateVariableInserter
                                 state={stateForInserter}
                                 textareaRef={contentRefs.current[partial.id]}
-                                onInsert={(newValue) =>
-                                  handleUpdatePartial(
+                                onInsert={(textToInsert) =>
+                                  handleInsertText(
                                     partial.id,
-                                    "content",
-                                    newValue
+                                    textToInsert,
+                                    partial.content
                                   )
                                 }
                               />

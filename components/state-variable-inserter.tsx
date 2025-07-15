@@ -32,7 +32,7 @@ export function StateVariableInserter({
       textToInsert +
       value.substring(selectionEnd);
 
-    onInsert(newValue);
+    onInsert(textToInsert);
 
     setTimeout(() => {
       if (textareaRef.current) {
