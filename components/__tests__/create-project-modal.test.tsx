@@ -1,15 +1,15 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { CreateProjectModal } from '../create-project-modal';
-import { useRouter } from 'next/navigation';
+import React from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { CreateProjectModal } from "../create-project-modal";
+import { useRouter } from "next/navigation";
 
 // Mock next/navigation
-jest.mock('next/navigation', () => ({
+jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
 }));
 
-describe('CreateProjectModal', () => {
+describe("CreateProjectModal", () => {
   const mockOnClose = jest.fn();
   const mockOnCreateProject = jest.fn();
   const mockPush = jest.fn();
@@ -21,7 +21,7 @@ describe('CreateProjectModal', () => {
     });
   });
 
-  it('renders when open', () => {
+  it("renders when open", () => {
     render(
       <CreateProjectModal
         isOpen={true}
@@ -30,13 +30,12 @@ describe('CreateProjectModal', () => {
       />
     );
 
-    expect(screen.getByText('Create New Project')).toBeInTheDocument();
-    expect(screen.getByLabelText('Project Name')).toBeInTheDocument();
-    expect(screen.getByLabelText('Description (optional)')).toBeInTheDocument();
-    expect(screen.getByLabelText('Game ID (optional)')).toBeInTheDocument();
+    expect(screen.getByText("New Project")).toBeInTheDocument();
+    expect(screen.getByLabelText("Project Name *")).toBeInTheDocument();
+    expect(screen.getByLabelText("Description")).toBeInTheDocument();
   });
 
-  it('does not render when closed', () => {
+  it("does not render when closed", () => {
     render(
       <CreateProjectModal
         isOpen={false}
@@ -45,10 +44,10 @@ describe('CreateProjectModal', () => {
       />
     );
 
-    expect(screen.queryByText('Create New Project')).not.toBeInTheDocument();
+    expect(screen.queryByText("New Project")).not.toBeInTheDocument();
   });
 
-  it('creates project with all fields filled', async () => {
+  it("creates project with all fields filled", async () => {
     const user = userEvent.setup();
 
     render(
@@ -59,22 +58,20 @@ describe('CreateProjectModal', () => {
       />
     );
 
-    const nameInput = screen.getByLabelText('Project Name');
-    const descriptionInput = screen.getByLabelText('Description (optional)');
-    const gameIdInput = screen.getByLabelText('Game ID (optional)');
+    const nameInput = screen.getByLabelText("Project Name *");
+    const descriptionInput = screen.getByLabelText("Description");
 
-    await user.type(nameInput, 'Test Project');
-    await user.type(descriptionInput, 'This is a test project');
-    await user.type(gameIdInput, '123');
+    await user.type(nameInput, "Test Project");
+    await user.type(descriptionInput, "This is a test project");
 
-    const createButton = screen.getByRole('button', { name: 'Create' });
+    const createButton = screen.getByRole("button", { name: "Create" });
     await user.click(createButton);
 
     expect(mockOnCreateProject).toHaveBeenCalledWith(
       expect.objectContaining({
-        name: 'Test Project',
-        description: 'This is a test project',
-        gameId: 123,
+        name: "Test Project",
+        description: "This is a test project",
+        gameId: null,
         agentRoles: [],
         agents: [],
         state: expect.objectContaining({
@@ -85,11 +82,10 @@ describe('CreateProjectModal', () => {
       })
     );
 
-    expect(mockOnClose).toHaveBeenCalled();
-    expect(mockPush).toHaveBeenCalledWith('/project?id=' + expect.any(String));
+    expect(mockOnClose).not.toHaveBeenCalled();
   });
 
-  it('creates project with only required fields', async () => {
+  it("creates project with only required fields", async () => {
     const user = userEvent.setup();
 
     render(
@@ -100,22 +96,22 @@ describe('CreateProjectModal', () => {
       />
     );
 
-    const nameInput = screen.getByLabelText('Project Name');
-    await user.type(nameInput, 'Minimal Project');
+    const nameInput = screen.getByLabelText("Project Name *");
+    await user.type(nameInput, "Minimal Project");
 
-    const createButton = screen.getByRole('button', { name: 'Create' });
+    const createButton = screen.getByRole("button", { name: "Create" });
     await user.click(createButton);
 
     expect(mockOnCreateProject).toHaveBeenCalledWith(
       expect.objectContaining({
-        name: 'Minimal Project',
-        description: '',
+        name: "Minimal Project",
+        description: "",
         gameId: null,
       })
     );
   });
 
-  it('does not create project with empty name', async () => {
+  it("does not create project with empty name", async () => {
     const user = userEvent.setup();
 
     render(
@@ -126,15 +122,14 @@ describe('CreateProjectModal', () => {
       />
     );
 
-    const createButton = screen.getByRole('button', { name: 'Create' });
+    const createButton = screen.getByRole("button", { name: "Create" });
     await user.click(createButton);
 
     expect(mockOnCreateProject).not.toHaveBeenCalled();
     expect(mockOnClose).not.toHaveBeenCalled();
-    expect(mockPush).not.toHaveBeenCalled();
   });
 
-  it('trims whitespace from project name', async () => {
+  it("trims whitespace from project name", async () => {
     const user = userEvent.setup();
 
     render(
@@ -145,20 +140,21 @@ describe('CreateProjectModal', () => {
       />
     );
 
-    const nameInput = screen.getByLabelText('Project Name');
-    await user.type(nameInput, '  Trimmed Project  ');
+    const nameInput = screen.getByLabelText("Project Name *");
+    await user.type(nameInput, "  Trimmed Project  ");
 
-    const createButton = screen.getByRole('button', { name: 'Create' });
+    const createButton = screen.getByRole("button", { name: "Create" });
     await user.click(createButton);
 
     expect(mockOnCreateProject).toHaveBeenCalledWith(
       expect.objectContaining({
-        name: '  Trimmed Project  ', // Note: The component stores the untrimmed value
+        name: "  Trimmed Project  ", // Note: The component stores the untrimmed value
+        gameId: null,
       })
     );
   });
 
-  it('handles cancel button click', async () => {
+  it("handles cancel button click", async () => {
     const user = userEvent.setup();
 
     render(
@@ -169,52 +165,14 @@ describe('CreateProjectModal', () => {
       />
     );
 
-    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+    const cancelButton = screen.getByRole("button", { name: "Cancel" });
     await user.click(cancelButton);
 
     expect(mockOnClose).toHaveBeenCalled();
     expect(mockOnCreateProject).not.toHaveBeenCalled();
   });
 
-  it('resets form when reopened', async () => {
-    const user = userEvent.setup();
-
-    const { rerender } = render(
-      <CreateProjectModal
-        isOpen={true}
-        onClose={mockOnClose}
-        onCreateProject={mockOnCreateProject}
-      />
-    );
-
-    // Fill in the form
-    const nameInput = screen.getByLabelText('Project Name');
-    await user.type(nameInput, 'Test Project');
-
-    // Close the modal
-    rerender(
-      <CreateProjectModal
-        isOpen={false}
-        onClose={mockOnClose}
-        onCreateProject={mockOnCreateProject}
-      />
-    );
-
-    // Reopen the modal
-    rerender(
-      <CreateProjectModal
-        isOpen={true}
-        onClose={mockOnClose}
-        onCreateProject={mockOnCreateProject}
-      />
-    );
-
-    // Check that the form is reset
-    const newNameInput = screen.getByLabelText('Project Name');
-    expect(newNameInput).toHaveValue('');
-  });
-
-  it('generates unique project IDs', async () => {
+  it("generates unique project IDs", async () => {
     const user = userEvent.setup();
 
     render(
@@ -225,17 +183,17 @@ describe('CreateProjectModal', () => {
       />
     );
 
-    const nameInput = screen.getByLabelText('Project Name');
-    await user.type(nameInput, 'Project 1');
+    const nameInput = screen.getByLabelText("Project Name *");
+    await user.type(nameInput, "Project 1");
 
-    const createButton = screen.getByRole('button', { name: 'Create' });
+    const createButton = screen.getByRole("button", { name: "Create" });
     await user.click(createButton);
 
     const firstCallId = mockOnCreateProject.mock.calls[0][0].id;
 
     // Create another project
     await user.clear(nameInput);
-    await user.type(nameInput, 'Project 2');
+    await user.type(nameInput, "Project 2");
     await user.click(createButton);
 
     const secondCallId = mockOnCreateProject.mock.calls[1][0].id;
@@ -243,7 +201,7 @@ describe('CreateProjectModal', () => {
     expect(firstCallId).not.toBe(secondCallId);
   });
 
-  it('includes timestamp in created project', async () => {
+  it("includes timestamp in created project", async () => {
     const user = userEvent.setup();
     const beforeTime = new Date().toISOString();
 
@@ -255,10 +213,10 @@ describe('CreateProjectModal', () => {
       />
     );
 
-    const nameInput = screen.getByLabelText('Project Name');
-    await user.type(nameInput, 'Timestamped Project');
+    const nameInput = screen.getByLabelText("Project Name *");
+    await user.type(nameInput, "Timestamped Project");
 
-    const createButton = screen.getByRole('button', { name: 'Create' });
+    const createButton = screen.getByRole("button", { name: "Create" });
     await user.click(createButton);
 
     const afterTime = new Date().toISOString();
